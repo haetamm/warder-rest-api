@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
 
         // Panggil seeder SuperAdminSeeder
         $this->call(SuperAdminSeeder::class);
+        $this->call(SellerUserSeeder::class);
     }
 }

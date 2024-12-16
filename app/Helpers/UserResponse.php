@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Response;
+namespace App\Helpers;
 
 class UserResponse
 {

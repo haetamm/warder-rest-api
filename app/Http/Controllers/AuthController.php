@@ -2,40 +2,50 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JsonResponse;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-        ]);
+        DB::beginTransaction();
+        try {
+            $request->validated();
+            $user = User::create([
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+            $role = Role::where('name', 'USER')->first();
+            $user->roles()->attach($role);
+            DB::commit();
 
-        $user = User::create([
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $role = Role::where('name', 'USER')->first();
-        $user->roles()->attach($role);
-
-        return response()->json(['message' => 'User registered successfully']);
+            return JsonResponse::respondSuccess('User Registration succesfully', 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return JsonResponse::respondFail('Registration failed: ' . $e->getMessage(), 500);
+        }
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validated();
         if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return JsonResponse::respondFail('Provided email or password is incorrect', 401);
         }
 
-        return response()->json(['token' => $token]);
+        $user = Auth::user();
+        return JsonResponse::respondSuccess([
+            'token' => $token,
+            'roles' => $user->roles->pluck('name'),
+        ], 200);
     }
 
     public function logout()

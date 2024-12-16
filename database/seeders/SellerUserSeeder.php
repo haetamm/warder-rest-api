@@ -6,11 +6,12 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
 
-class SuperAdminSeeder extends Seeder
+
+class SellerUserSeeder extends Seeder
 {
     public function run()
     {
-        $roles = ['ADMIN', 'USER'];
+        $roles = ['USER', 'SELLER'];
 
         $rolesIds = [];
         foreach ($roles as $roleName) {
@@ -18,11 +19,11 @@ class SuperAdminSeeder extends Seeder
             $rolesIds[] = $role->id;
         }
 
-        $superAdmin = User::firstOrCreate(
-            ['email' => 'admin@gmail.com'],
+        $userSeller = User::firstOrCreate(
+            ['email' => 'seller@gmail.com'],
             ['password' => bcrypt('123456')]
         );
 
-        $superAdmin->roles()->sync($rolesIds);
+        $userSeller->roles()->sync($rolesIds);
     }
 }
