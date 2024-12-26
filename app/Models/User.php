@@ -67,6 +67,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Role::class, 'user_roles');
     }
 
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -75,6 +80,8 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [
+            'name' => $this->profile->name,
+            'image' => $this->profile->image,
             'roles' => $this->roles->pluck('name')->toArray(),
         ];
     }

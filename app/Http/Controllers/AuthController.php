@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\JsonResponse;
 use Illuminate\Support\Str;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
+use App\Http\Response\JsonResponse;
+use App\Http\Response\UserResponse;
+use App\Models\Profile;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -27,23 +29,6 @@ class AuthController extends Controller
         $this->googleProvider = Socialite::driver('google');
     }
 
-    protected function createUserWithRoles($email, $password = null)
-    {
-        if (!$password) {
-            $password = Str::random(8, 'alnum');
-        }
-
-        $user = User::create([
-            'email' => $email,
-            'password' => Hash::make($password),
-        ]);
-
-        $role = Role::where('name', 'USER')->first();
-        $user->roles()->attach($role);
-
-        return $user;
-    }
-
     public function redirectToGoogle()
     {
         return response()->json([
@@ -57,19 +42,16 @@ class AuthController extends Controller
 
         try {
             $googleUser = $this->googleProvider->stateless()->user();
-
             $user = User::where('email', $googleUser->getEmail())->first();
             if (!$user) {
                 $user = $this->createUserWithRoles($googleUser->getEmail());
             }
 
             $token = Auth::guard('api')->login($user, true);
+            $user->load('profile', 'roles');
             DB::commit();
 
-            return JsonResponse::respondSuccess([
-                'token' => $token,
-                'roles' => $user->roles->pluck('name'),
-            ], 200);
+            return JsonResponse::respondSuccess(UserResponse::formatLoginUser($user, $token), 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return JsonResponse::respondFail('Error during Google login: ' . $e->getMessage(), 500);
@@ -98,16 +80,41 @@ class AuthController extends Controller
             return JsonResponse::respondFail('Provided email or password is incorrect', 401);
         }
 
-        $user = Auth::user();
-        return JsonResponse::respondSuccess([
-            'token' => $token,
-            'roles' => $user->roles->pluck('name'),
-        ], 200);
+        $user = User::with('profile')->find(Auth::id());
+        return JsonResponse::respondSuccess(UserResponse::formatLoginUser($user, $token), 200);
     }
 
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());
         return response()->json(['message' => 'User logged out successfully']);
+    }
+
+    protected function createUserWithRoles($email, $password = null)
+    {
+        $password = $password ?? Str::random(8);
+
+        $user = User::create([
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        $role = Role::where('name', 'USER')->first();
+        if (!$role) {
+            throw new \Exception('Role USER not found');
+        }
+        $user->roles()->attach($role);
+
+        $username = Str::before($email, '@');
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'name' => $username,
+        ]);
+
+        if (!$profile) {
+            throw new \Exception('Failed to create profile');
+        }
+
+        return $user;
     }
 }

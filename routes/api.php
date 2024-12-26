@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +15,8 @@ Route::get('login/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
     Route::delete('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'index']);
+});
+
+Route::middleware(['role' . ':USER,SELLER'])->group(function () {
+    Route::put('/user', [UserController::class, 'update']);
 });
