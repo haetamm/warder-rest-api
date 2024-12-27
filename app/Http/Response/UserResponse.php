@@ -13,6 +13,7 @@ class UserResponse
             'gender' => $user->profile->gender,
             'email' => $user->email,
             'phone_number' => $user->profile->phone_number,
+            'roles' => $user->roles->pluck('name'),
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
         ];

@@ -77,7 +77,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
         if (!$token = JWTAuth::attempt($credentials)) {
-            return JsonResponse::respondFail('Provided email or password is incorrect', 401);
+            return JsonResponse::respondFail('Provided email or password is incorrect', 422);
         }
 
         $user = User::with('profile')->find(Auth::id());
