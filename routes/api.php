@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -16,6 +17,10 @@ Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
     Route::delete('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'index']);
     Route::put('/user', [UserController::class, 'update']);
+    Route::get('/user/address', [AddressController::class, 'index']);
+    Route::post('/user/address', [AddressController::class, 'store']);
+    Route::get('/user/address/{id}', [AddressController::class, 'getById']);
+    Route::put('/user/address/{id}', [AddressController::class, 'update']);
 });
 
 Route::middleware(['role' . ':USER,SELLER'])->group(function () {});

@@ -22,7 +22,7 @@ class UpdateUserRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
+            'name' => 'sometimes|string|max:50',
             'birth_date' => 'sometimes|date',
             'gender' => 'sometimes|in:pria,wanita,other',
             'email' => 'sometimes|email|unique:users,email,' . $this->user()->id,
