@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('phone_number');
             $table->string('label');
             $table->string('province');
-            $table->string('city');
+            $table->string('regencies');
             $table->string('district');
-            $table->string('subdistrict');
+            $table->string('villages');
             $table->string('street_name');
             $table->string('postal_code');
             $table->boolean('selected');
