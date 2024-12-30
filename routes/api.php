@@ -21,6 +21,7 @@ Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
     Route::post('/user/address', [AddressController::class, 'store']);
     Route::get('/user/address/{id}', [AddressController::class, 'getById']);
     Route::put('/user/address/{id}', [AddressController::class, 'update']);
+    Route::delete('/user/address/{id}', [AddressController::class, 'deleteById']);
 });
 
 Route::middleware(['role' . ':USER,SELLER'])->group(function () {});

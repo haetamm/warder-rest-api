@@ -17,10 +17,10 @@ return new class extends Migration
             $table->string('recipient_name');
             $table->string('phone_number');
             $table->string('label');
-            $table->string('province');
-            $table->string('regencies');
-            $table->string('district');
-            $table->string('villages');
+            $table->string('province')->nullable();
+            $table->string('regencies')->nullable();
+            $table->string('district')->nullable();
+            $table->string('villages')->nullable();
             $table->string('street_name');
             $table->string('postal_code');
             $table->boolean('selected');

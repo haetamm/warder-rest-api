@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddressRequest;
+use App\Http\Requests\UpdateAddressRequest;
 use App\Http\Response\JsonResponse;
 use App\Models\Address;
 use App\Models\User;
@@ -44,7 +45,7 @@ class AddressController extends Controller
         return JsonResponse::respondSuccess($address);
     }
 
-    public function update(AddressRequest $request, $id)
+    public function update(UpdateAddressRequest $request, $id)
     {
         $validated = $request->validated();
 
@@ -59,8 +60,26 @@ class AddressController extends Controller
             Address::where('user_id', $user->id)->update(['selected' => false]);
         }
 
+        $validated = array_filter($validated, function ($value) {
+            return $value !== null;
+        });
+
         $address->update($validated);
 
         return JsonResponse::respondSuccess($address);
+    }
+
+    public function deleteById($id)
+    {
+        $user = User::find(Auth::id());
+
+        $address = Address::where('id', $id)->where('user_id', $user->id)->first();
+        if (!$address) {
+            return JsonResponse::respondErrorNotFound("Address not found");
+        }
+
+        $address->delete();
+
+        return JsonResponse::respondSuccess('Your data has been deleted successfully.', 200);
     }
 }
