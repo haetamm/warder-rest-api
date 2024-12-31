@@ -11,11 +11,16 @@ use Illuminate\Support\Facades\Auth;
 
 class AddressController extends Controller
 {
+    protected $user;
+
+    public function __construct()
+    {
+        $this->user = User::find(Auth::id());
+    }
+
     public function index()
     {
-        $user = User::find(Auth::id());
-
-        $addresses = Address::where('user_id', $user->id)->get();
+        $addresses = Address::where('user_id', $this->user->id)->get();
         return JsonResponse::respondSuccess($addresses);
     }
 
@@ -23,22 +28,18 @@ class AddressController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::find(Auth::id());
-
         if ($validated['selected']) {
-            Address::where('user_id', $user->id)->update(['selected' => false]);
+            Address::where('user_id', $this->user->id)->update(['selected' => false]);
         }
 
-        $address = $user->addresses()->create($validated);
+        $address = $this->user->addresses()->create($validated);
 
         return JsonResponse::respondSuccess($address);
     }
 
     public function getById($id)
     {
-        $user = User::find(Auth::id());
-
-        $address = Address::where('id', $id)->where('user_id', $user->id)->first();
+        $address = Address::where('id', $id)->where('user_id', $this->user->id)->first();
         if (!$address) {
             return JsonResponse::respondErrorNotFound("Address not found");
         }
@@ -49,15 +50,13 @@ class AddressController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::find(Auth::id());
-
-        $address = Address::where('id', $id)->where('user_id', $user->id)->first();
+        $address = Address::where('id', $id)->where('user_id', $this->user->id)->first();
         if (!$address) {
             return JsonResponse::respondErrorNotFound("Address not found");
         }
 
         if (isset($validated['selected']) && $validated['selected']) {
-            Address::where('user_id', $user->id)->update(['selected' => false]);
+            Address::where('user_id', $this->user->id)->update(['selected' => false]);
         }
 
         $validated = array_filter($validated, function ($value) {
@@ -71,9 +70,7 @@ class AddressController extends Controller
 
     public function deleteById($id)
     {
-        $user = User::find(Auth::id());
-
-        $address = Address::where('id', $id)->where('user_id', $user->id)->first();
+        $address = Address::where('id', $id)->where('user_id', $this->user->id)->first();
         if (!$address) {
             return JsonResponse::respondErrorNotFound("Address not found");
         }

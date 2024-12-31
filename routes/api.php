@@ -17,6 +17,7 @@ Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
     Route::delete('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'index']);
     Route::put('/user', [UserController::class, 'update']);
+    Route::post('/user/reset-password', [UserController::class, 'changePassword']);
     Route::get('/user/address', [AddressController::class, 'index']);
     Route::post('/user/address', [AddressController::class, 'store']);
     Route::get('/user/address/{id}', [AddressController::class, 'getById']);
