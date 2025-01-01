@@ -26,7 +26,8 @@ class UpdateUserRequest extends BaseFormRequest
             'birth_date' => 'sometimes|date',
             'gender' => 'sometimes|in:pria,wanita,other',
             'email' => 'sometimes|email|unique:users,email,' . $this->user()->id,
-            'phone_number' => 'sometimes|string|max:15',
+            'phone_number' => 'sometimes|string|max:15|unique:profiles,phone_number,' . $this->user()->profile->id,
+
         ];
     }
 

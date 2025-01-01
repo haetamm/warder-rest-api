@@ -33,7 +33,7 @@ class SellerUserSeeder extends Seeder
                 'name' => 'Seller Name',
                 'birth_date' => null,
                 'gender' => 'pria',
-                'phone_number' => '000000000000'
+                'phone_number' => '123456789987'
             ]
         );
     }

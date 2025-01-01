@@ -32,7 +32,7 @@ class SuperAdminSeeder extends Seeder
                 'name' => 'Super Admin',
                 'birth_date' => null,
                 'gender' => 'pria',
-                'phone_number' => '000000000000'
+                'phone_number' => '1234567891021'
             ]
         );
     }

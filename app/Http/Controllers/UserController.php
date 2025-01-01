@@ -22,7 +22,7 @@ class UserController extends Controller
 
     public function index()
     {
-        $user = User::with('profile', 'roles')->find(Auth::id());
+        $user = User::with('profile', 'roles', 'sellers')->find(Auth::id());
         return JsonResponse::respondSuccess(UserResponse::formatUser($user));
     }
 
