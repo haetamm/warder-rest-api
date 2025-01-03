@@ -6,7 +6,7 @@ use App\Models\Profile;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
-
+use App\Models\Seller;
 
 class SellerUserSeeder extends Seeder
 {
@@ -34,6 +34,20 @@ class SellerUserSeeder extends Seeder
                 'birth_date' => null,
                 'gender' => 'pria',
                 'phone_number' => '123456789987'
+            ]
+        );
+
+        Seller::firstOrCreate(
+            ['user_id' => $userSeller->id],
+            [
+                'shop_name' => 'Sejahtera Store',
+                'shop_domain' => 'sejahtera',
+                'province' => 'Kepulauan Riau',
+                'regencies' => 'Kota tanjung pinang',
+                'district' => 'Bukit bestari',
+                'villages' => 'Tanjung unggat',
+                'street_name' => 'Jl. makalo mentawai barat 43',
+                'postal_code' => '76803',
             ]
         );
     }

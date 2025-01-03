@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('villages')->nullable();
             $table->string('street_name')->nullable();
             $table->string('postal_code')->nullable();
+            $table->string('slogan')->nullable();
+            $table->string('desc')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });

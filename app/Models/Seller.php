@@ -37,6 +37,8 @@ class Seller extends Model
         'user_id',
         'street_name',
         'postal_code',
+        'slogan',
+        'desc'
     ];
 
     /**

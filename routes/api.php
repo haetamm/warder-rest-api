@@ -30,3 +30,8 @@ Route::middleware(['role' . ':USER'])->group(function () {
     Route::post('/seller', [SellerController::class, 'store']);
     Route::post('/seller/region', [SellerController::class, 'storeRegion']);
 });
+
+Route::middleware(['role' . ':SELLER'])->group(function () {
+    Route::get('/seller', [SellerController::class, 'getCurrentSeller']);
+    Route::put('/seller', [SellerController::class, 'updateSeller']);
+});
