@@ -76,7 +76,6 @@ class AddressController extends Controller
         }
 
         $address->delete();
-
-        return JsonResponse::respondSuccess('Your data has been deleted successfully.', 200);
+        return JsonResponse::respondSuccess('Your data has been deleted successfully.');
     }
 }

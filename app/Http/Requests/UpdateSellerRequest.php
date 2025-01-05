@@ -30,8 +30,8 @@ class UpdateSellerRequest extends BaseFormRequest
             'villages' => 'nullable|string|max:255',
             'street_name' => 'sometimes|string|max:255',
             'postal_code' => 'sometimes|string|max:10',
-            'slogan' => 'nullable|string|max:255',
-            'desc' => 'nullable|string|max:255',
+            'slogan' => 'nullable|string|max:48',
+            'desc' => 'nullable|string|max:140',
 
             'regencies' => 'nullable|string|max:255|required_with:province,district,villages',
             'district' => 'nullable|string|max:255|required_with:province,regencies,villages',

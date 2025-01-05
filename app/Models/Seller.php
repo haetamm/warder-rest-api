@@ -34,7 +34,6 @@ class Seller extends Model
         'regencies',
         'district',
         'villages',
-        'user_id',
         'street_name',
         'postal_code',
         'slogan',
@@ -53,5 +52,10 @@ class Seller extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function announcements()
+    {
+        return $this->hasMany(Announcement::class);
     }
 }

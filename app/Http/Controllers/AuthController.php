@@ -51,7 +51,7 @@ class AuthController extends Controller
             $user->load('profile', 'roles');
             DB::commit();
 
-            return JsonResponse::respondSuccess(UserResponse::formatLoginUser($user, $token), 200);
+            return JsonResponse::respondSuccess(UserResponse::formatLoginUser($token));
         } catch (\Exception $e) {
             DB::rollBack();
             return JsonResponse::respondFail('Error during Google login: ' . $e->getMessage(), 500);
@@ -80,8 +80,7 @@ class AuthController extends Controller
             return JsonResponse::respondFail('Provided email or password is incorrect', 400);
         }
 
-        $user = User::with('profile')->find(Auth::id());
-        return JsonResponse::respondSuccess(UserResponse::formatLoginUser($user, $token), 200);
+        return JsonResponse::respondSuccess(UserResponse::formatLoginUser($token), 200);
     }
 
     public function logout()

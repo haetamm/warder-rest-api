@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -34,4 +34,8 @@ Route::middleware(['role' . ':USER'])->group(function () {
 Route::middleware(['role' . ':SELLER'])->group(function () {
     Route::get('/seller', [SellerController::class, 'getCurrentSeller']);
     Route::put('/seller', [SellerController::class, 'updateSeller']);
+    Route::get('/seller/announcements', [AnnouncementController::class, 'index']);
+    Route::post('/seller/announcements', [AnnouncementController::class, 'store']);
+    Route::put('/seller/announcements/{id}', [AnnouncementController::class, 'update']);
+    Route::delete('/seller/announcements/{id}', [AnnouncementController::class, 'delete']);
 });

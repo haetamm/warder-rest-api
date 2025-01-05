@@ -36,7 +36,6 @@ class Address extends Model
         'villages',
         'street_name',
         'postal_code',
-        'user_id',
         'selected'
     ];
 

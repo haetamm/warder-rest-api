@@ -23,18 +23,10 @@ class UserResponse
         ];
     }
 
-    public static function formatLoginUser($user, $token)
+    public static function formatLoginUser($token)
     {
-        $shop_name = $user->sellers ? $user->sellers->shop_name : null;
-        $shop_domain = $user->sellers ? $user->sellers->shop_domain : null;
         return [
-            'name' => $user->profile->name,
-            'shop_name' => $shop_name,
-            'shop_domain' => $shop_domain,
-            'image' => $user->profile->image,
             'token' => $token,
-            'phone_number' => $user->profile->phone_number,
-            'roles' => $user->roles->pluck('name'),
         ];
     }
 }
