@@ -3,6 +3,7 @@
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
     Route::get('/user/address/{id}', [AddressController::class, 'getById']);
     Route::put('/user/address/{id}', [AddressController::class, 'update']);
     Route::delete('/user/address/{id}', [AddressController::class, 'deleteById']);
+    Route::get('/products/{domain}', [ProductController::class, 'getByDomainSeller']);
 });
 
 Route::middleware(['role' . ':USER'])->group(function () {
@@ -38,4 +40,8 @@ Route::middleware(['role' . ':SELLER'])->group(function () {
     Route::post('/seller/announcements', [AnnouncementController::class, 'store']);
     Route::put('/seller/announcements/{id}', [AnnouncementController::class, 'update']);
     Route::delete('/seller/announcements/{id}', [AnnouncementController::class, 'delete']);
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'updateById']);
+    Route::delete('/products/{id}', [ProductController::class, 'deleteById']);
+    Route::get('/my-products', [ProductController::class, 'getByCurrentSeller']);
 });

@@ -16,9 +16,6 @@ class AnnouncementController extends Controller
     {
         $this->user = User::find(Auth::id());
         $this->seller = $this->user->sellers()->first();
-        if (!$this->seller) {
-            return JsonResponse::respondErrorNotFound('Seller not found for this user');
-        }
     }
 
     public function index()

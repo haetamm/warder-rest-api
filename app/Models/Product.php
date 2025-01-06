@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Seller extends Model
+class Product extends Model
 {
     public $incrementing = false;
     protected $keyType = 'string';
@@ -28,16 +28,18 @@ class Seller extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'shop_name',
-        'shop_domain',
-        'province',
-        'regencies',
-        'district',
-        'villages',
-        'street_name',
-        'postal_code',
-        'slogan',
-        'desc'
+        'name',
+        'image_url',
+        'condition',
+        'description',
+        'warranty_type',
+        'warranty_period',
+        'brand',
+        'price',
+        'stock',
+        'sku',
+        'product_weight',
+        'shipping_insurance'
     ];
 
     /**
@@ -46,21 +48,11 @@ class Seller extends Model
      * @var array<int, string>
      */
     protected $hidden = [
-        'user_id'
+        'seller_id',
     ];
 
-    public function user(): BelongsTo
+    public function seller(): BelongsTo
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function announcements()
-    {
-        return $this->hasMany(Announcement::class);
-    }
-
-    public function products()
-    {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(Seller::class);
     }
 }
