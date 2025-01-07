@@ -51,7 +51,8 @@ class ProductController extends Controller
     public function getByCurrentSeller()
     {
         try {
-            $products = $this->seller->products()->get();
+            $products = $this->seller->products()->withTrashed()->get();
+
             if ($products->isEmpty()) {
                 return JsonResponse::respondSuccess([]);
             }
@@ -61,6 +62,7 @@ class ProductController extends Controller
             return JsonResponse::respondFail('Failed to fetch products: ' . $e->getMessage(), 500);
         }
     }
+
 
     public function getByDomainSeller($domain)
     {
@@ -81,6 +83,28 @@ class ProductController extends Controller
         }
     }
 
+    public function updateStatusProductById($id)
+    {
+        try {
+            $product = $this->seller->products()->withTrashed()->find($id);
+            if (!$product) {
+                return JsonResponse::respondErrorNotFound('Product not found');
+            }
+
+            if ($product->trashed()) {
+                $product->restore();
+                $message = 'Product status set to active successfully';
+            } else {
+                $product->delete();
+                $message = 'Product status set to inactive successfully';
+            }
+
+            return JsonResponse::respondSuccess($product->fresh(), $message);
+        } catch (\Exception $e) {
+            return JsonResponse::respondFail('Failed to toggle product status: ' . $e->getMessage(), 500);
+        }
+    }
+
     public function deleteById($id)
     {
         try {
@@ -88,7 +112,7 @@ class ProductController extends Controller
             if (!$product) {
                 return JsonResponse::respondErrorNotFound('Product not found');
             }
-            $product->delete();
+            $product->forceDelete();
 
             return JsonResponse::respondSuccess('Product deleted successfully');
         } catch (\Exception $e) {

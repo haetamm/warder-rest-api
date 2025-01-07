@@ -15,17 +15,19 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('login/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('login/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+Route::get('/products/{domain}', [ProductController::class, 'getByDomainSeller']);
+
 Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
     Route::delete('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'index']);
     Route::put('/user', [UserController::class, 'update']);
     Route::post('/user/reset-password', [UserController::class, 'changePassword']);
-    Route::get('/user/address', [AddressController::class, 'index']);
-    Route::post('/user/address', [AddressController::class, 'store']);
-    Route::get('/user/address/{id}', [AddressController::class, 'getById']);
-    Route::put('/user/address/{id}', [AddressController::class, 'update']);
-    Route::delete('/user/address/{id}', [AddressController::class, 'deleteById']);
-    Route::get('/products/{domain}', [ProductController::class, 'getByDomainSeller']);
+
+    Route::get('/address', [AddressController::class, 'index']);
+    Route::post('/address', [AddressController::class, 'store']);
+    Route::get('/address/{id}', [AddressController::class, 'getById']);
+    Route::put('/address/{id}', [AddressController::class, 'update']);
+    Route::delete('/address/{id}', [AddressController::class, 'deleteById']);
 });
 
 Route::middleware(['role' . ':USER'])->group(function () {
@@ -36,12 +38,16 @@ Route::middleware(['role' . ':USER'])->group(function () {
 Route::middleware(['role' . ':SELLER'])->group(function () {
     Route::get('/seller', [SellerController::class, 'getCurrentSeller']);
     Route::put('/seller', [SellerController::class, 'updateSeller']);
-    Route::get('/seller/announcements', [AnnouncementController::class, 'index']);
-    Route::post('/seller/announcements', [AnnouncementController::class, 'store']);
-    Route::put('/seller/announcements/{id}', [AnnouncementController::class, 'update']);
-    Route::delete('/seller/announcements/{id}', [AnnouncementController::class, 'delete']);
+
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'delete']);
+
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'updateById']);
     Route::delete('/products/{id}', [ProductController::class, 'deleteById']);
+
     Route::get('/my-products', [ProductController::class, 'getByCurrentSeller']);
+    Route::put('/my-products/{id}', [ProductController::class, 'updateStatusProductById']);
 });

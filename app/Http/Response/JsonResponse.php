@@ -36,10 +36,10 @@ class JsonResponse
         ], $statusCode);
     }
 
-    public static function respondSuccess($data, $statusCode = 200)
+    public static function respondSuccess($data, $message = "success", $statusCode = 200)
     {
         return response()->json([
-            "status" => "success",
+            "status" => $message,
             "data" => $data
         ], $statusCode);
     }
