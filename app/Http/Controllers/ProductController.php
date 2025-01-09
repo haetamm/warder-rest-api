@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Http\Response\JsonResponse;
 use App\Models\Seller;
 use App\Models\User;
@@ -15,15 +16,22 @@ class ProductController extends Controller
 
     public function __construct()
     {
-        $this->user = User::find(Auth::id());
-        $this->seller = $this->user->sellers()->first();
+        $excludedFunctions = ['getByDomainSeller'];
+        $currentFunction = request()->route()->getActionMethod();
+
+        if (!in_array($currentFunction, $excludedFunctions)) {
+            $this->user = User::find(Auth::id());
+            $this->seller = $this->user->sellers()->first();
+        }
     }
+
 
     public function  store(ProductRequest $request)
     {
         $validated = $request->validated();
         try {
             $validated['seller_id'] = $this->seller->id;
+            $validated['is_active'] = null;
             $product = $this->seller->products()->create($validated);
             return JsonResponse::respondSuccess($product);
         } catch (\Exception $e) {
@@ -31,7 +39,7 @@ class ProductController extends Controller
         }
     }
 
-    public function updateById(ProductRequest $request, $id)
+    public function updateById(UpdateProductRequest $request, $id)
     {
         $validated = $request->validated();
 
@@ -51,7 +59,7 @@ class ProductController extends Controller
     public function getByCurrentSeller()
     {
         try {
-            $products = $this->seller->products()->withTrashed()->get();
+            $products = $this->seller->products()->get();
 
             if ($products->isEmpty()) {
                 return JsonResponse::respondSuccess([]);
@@ -72,7 +80,7 @@ class ProductController extends Controller
                 return JsonResponse::respondErrorNotFound('Seller not found');
             }
 
-            $products = $seller->products;
+            $products = $seller->products()->active()->get(); // mengambil product active
             if ($products->isEmpty()) {
                 return JsonResponse::respondSuccess([]);
             }
@@ -83,36 +91,41 @@ class ProductController extends Controller
         }
     }
 
+
+
     public function updateStatusProductById($id)
-    {
-        try {
-            $product = $this->seller->products()->withTrashed()->find($id);
-            if (!$product) {
-                return JsonResponse::respondErrorNotFound('Product not found');
-            }
-
-            if ($product->trashed()) {
-                $product->restore();
-                $message = 'Product status set to active successfully';
-            } else {
-                $product->delete();
-                $message = 'Product status set to inactive successfully';
-            }
-
-            return JsonResponse::respondSuccess($product->fresh(), $message);
-        } catch (\Exception $e) {
-            return JsonResponse::respondFail('Failed to toggle product status: ' . $e->getMessage(), 500);
-        }
-    }
-
-    public function deleteById($id)
     {
         try {
             $product = $this->seller->products()->find($id);
             if (!$product) {
                 return JsonResponse::respondErrorNotFound('Product not found');
             }
-            $product->forceDelete();
+
+            if ($product->is_active) {
+                $product->is_active = null;
+                $message = 'Product status set to active successfully';
+            } else {
+                $product->is_active = now();
+                $message = 'Product status set to inactive successfully';
+            }
+
+            $product->save();
+            return JsonResponse::respondSuccess($product->fresh(), $message);
+        } catch (\Exception $e) {
+            return JsonResponse::respondFail('Failed to toggle product status: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function deleteById($id)
+    {
+        try {
+            $product = $this->seller->products()->first();
+            if (!$product) {
+                return JsonResponse::respondErrorNotFound('Product not found');
+            }
+            $product->delete();
 
             return JsonResponse::respondSuccess('Product deleted successfully');
         } catch (\Exception $e) {

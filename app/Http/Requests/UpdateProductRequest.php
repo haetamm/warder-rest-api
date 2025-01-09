@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-class ProductRequest extends BaseFormRequest
+class UpdateProductRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,6 +19,8 @@ class ProductRequest extends BaseFormRequest
      */
     public function rules(): array
     {
+        $productId = $this->route('id');
+
         return [
             'name' => 'required|string|min:25|max:255',
             'image_url' => 'nullable|string',
@@ -26,7 +28,7 @@ class ProductRequest extends BaseFormRequest
             'description' => 'required|string|min:260|max:5000',
             'price' => 'required|numeric|min:100|regex:/^\d{1,13}(\.\d{1,2})?$/',
             'stock' => 'required|numeric|min:0',
-            'sku' => 'nullable|string|unique:products,sku',
+            'sku' => 'nullable|string|unique:products,sku,' . $productId,
             'product_weight' => 'required|numeric|min:1|max:500000',
             'shipping_insurance' => 'required|in:wajib,opsional',
         ];

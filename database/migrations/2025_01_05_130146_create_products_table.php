@@ -18,14 +18,13 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->enum('condition', ['baru', 'bekas']);
             $table->text('description');
-            $table->string('warranty_type');
-            $table->string('warranty_period')->nullable();
             $table->decimal('price', 15, 2)->unsigned();
             $table->unsignedInteger('stock');
             $table->string('sku')->unique()->nullable();
             $table->unsignedMediumInteger('product_weight');
             $table->enum('shipping_insurance', ['wajib', 'opsional']);
             $table->foreign('seller_id')->references('id')->on('sellers')->onDelete('cascade');
+            $table->timestamp('is_active')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

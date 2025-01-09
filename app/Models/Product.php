@@ -37,14 +37,13 @@ class Product extends Model
         'image_url',
         'condition',
         'description',
-        'warranty_type',
-        'warranty_period',
         'brand',
         'price',
         'stock',
         'sku',
         'product_weight',
-        'shipping_insurance'
+        'shipping_insurance',
+        'is_active',
     ];
 
     /**
@@ -54,7 +53,13 @@ class Product extends Model
      */
     protected $hidden = [
         'seller_id',
+        'deleted_at'
     ];
+
+    public function scopeActive($query)
+    {
+        return $query->whereNull('is_active');
+    }
 
     public function seller(): BelongsTo
     {
