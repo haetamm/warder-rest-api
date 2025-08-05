@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Http\Response\ByDomainResponse;
 use App\Http\Response\JsonResponse;
+use App\Http\Response\PaginationResponse;
+use App\Models\Product;
 use App\Models\Seller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ProductController extends Controller
 {
@@ -16,7 +21,7 @@ class ProductController extends Controller
 
     public function __construct()
     {
-        $excludedFunctions = ['getByDomainSeller'];
+        $excludedFunctions = ['index', 'getByDomainSeller'];
         $currentFunction = request()->route()->getActionMethod();
 
         if (!in_array($currentFunction, $excludedFunctions)) {
@@ -25,14 +30,108 @@ class ProductController extends Controller
         }
     }
 
-
-    public function  store(ProductRequest $request)
+    private function applyRangeFilter($query, string $column, $value)
     {
-        $validated = $request->validated();
+        if (is_array($value)) {
+            if (isset($value['min'])) {
+                $query->where($column, '>=', $value['min']);
+            }
+            if (isset($value['max'])) {
+                $query->where($column, '<=', $value['max']);
+            }
+        }
+    }
+
+    private function applyProductFilters($query, $extraFilters = [])
+    {
+        $defaultFilters = [
+            'name',
+            'condition',
+            AllowedFilter::callback('price', fn($query, $value) =>
+                $this->applyRangeFilter($query, 'price', $value)
+            ),
+            AllowedFilter::callback('stock', fn($query, $value) =>
+                $this->applyRangeFilter($query, 'stock', $value)
+            ),
+            'sku',
+        ];
+
+        return $query->allowedFilters(array_merge($defaultFilters, $extraFilters))
+                    ->allowedSorts(['name', 'price', 'created_at']);
+    }
+
+    public function index()
+    {
         try {
-            $validated['seller_id'] = $this->seller->id;
-            $validated['is_active'] = null;
-            $product = $this->seller->products()->create($validated);
+            $query = QueryBuilder::for(Product::class)
+                ->active();
+
+            if (request()->query('view') === 'true') {
+                $query->orderBy('view', 'desc');
+            }
+
+            $products = $this->applyProductFilters($query)
+                ->paginate(request()->input('per_page', 10));
+
+            $formattedProducts = $products->map(fn($product) => ByDomainResponse::formatProduct($product));
+            return JsonResponse::respondSuccess([
+                'products' => $formattedProducts,
+                'pagination' => PaginationResponse::formatPagination($products),
+            ]);
+        } catch (\Exception $e) {
+            return JsonResponse::respondFail('Failed to fetch products: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getByCurrentSeller()
+    {
+        try {
+            $products = $this->applyProductFilters(QueryBuilder::for($this->seller->products()))
+                ->paginate(request()->input('per_page', 10));
+
+            $formattedProducts = $products->map(fn($product) => ByDomainResponse::formatProduct($product));
+            return JsonResponse::respondSuccess([
+                'products' => $formattedProducts,
+                'pagination' => PaginationResponse::formatPagination($products),
+            ]);
+        } catch (\Exception $e) {
+            return JsonResponse::respondFail('Failed to fetch products: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getByDomainSeller($domain)
+    {
+        try {
+            $seller = Seller::where('shop_domain', $domain)->firstOrFail();
+
+            $products = $this->applyProductFilters(
+                QueryBuilder::for(Product::class)
+                    ->active()
+                    ->where('seller_id', $seller->id),
+                [AllowedFilter::exact('seller_id')]
+            )->paginate(request()->input('per_page', 10));
+
+            $formattedSeller = ByDomainResponse::formatSeller($seller);
+            $formattedProducts = $products->map(fn($product) => ByDomainResponse::formatProduct($product));
+
+            return JsonResponse::respondSuccess([
+                'seller' => $formattedSeller,
+                'products' => $formattedProducts,
+                'pagination' => PaginationResponse::formatPagination($products),
+            ]);
+        } catch (\Exception $e) {
+            return JsonResponse::respondFail('Failed to fetch products: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function store(ProductRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            $data['seller_id'] = $this->seller->id;
+            $data['is_active'] = null;
+
+            $product = $this->seller->products()->create($data);
             return JsonResponse::respondSuccess($product);
         } catch (\Exception $e) {
             return JsonResponse::respondFail('Registration Product failed: ' . $e->getMessage(), 500);
@@ -41,92 +140,37 @@ class ProductController extends Controller
 
     public function updateById(UpdateProductRequest $request, $id)
     {
-        $validated = $request->validated();
-
-        $product = $this->seller->products()->find($id);
-        if (!$product) {
-            return JsonResponse::respondErrorNotFound('Product not found');
-        }
-
         try {
-            $product->update($validated);
+            $product = $this->seller->products()->findOrFail($id);
+            $product->update($request->validated());
             return JsonResponse::respondSuccess($product);
         } catch (\Exception $e) {
             return JsonResponse::respondFail('Failed to update product: ' . $e->getMessage(), 500);
         }
     }
 
-    public function getByCurrentSeller()
-    {
-        try {
-            $products = $this->seller->products()->get();
-
-            if ($products->isEmpty()) {
-                return JsonResponse::respondSuccess([]);
-            }
-
-            return JsonResponse::respondSuccess($products);
-        } catch (\Exception $e) {
-            return JsonResponse::respondFail('Failed to fetch products: ' . $e->getMessage(), 500);
-        }
-    }
-
-
-    public function getByDomainSeller($domain)
-    {
-        try {
-            $seller = Seller::where('shop_domain', $domain)->first();
-            if (!$seller) {
-                return JsonResponse::respondErrorNotFound('Seller not found');
-            }
-
-            $products = $seller->products()->active()->get(); // mengambil product active
-            if ($products->isEmpty()) {
-                return JsonResponse::respondSuccess([]);
-            }
-
-            return JsonResponse::respondSuccess($products);
-        } catch (\Exception $e) {
-            return JsonResponse::respondFail('Failed to fetch products: ' . $e->getMessage(), 500);
-        }
-    }
-
-
-
     public function updateStatusProductById($id)
     {
         try {
-            $product = $this->seller->products()->find($id);
-            if (!$product) {
-                return JsonResponse::respondErrorNotFound('Product not found');
-            }
-
-            if ($product->is_active) {
-                $product->is_active = null;
-                $message = 'Product status set to active successfully';
-            } else {
-                $product->is_active = now();
-                $message = 'Product status set to inactive successfully';
-            }
-
+            $product = $this->seller->products()->findOrFail($id);
+            $product->is_active = is_null($product->is_active) ? now() : null;
             $product->save();
+
+            $message = is_null($product->is_active) ?
+                'Product status set to active successfully' :
+                'Product status set to inactive successfully';
+
             return JsonResponse::respondSuccess($product->fresh(), $message);
         } catch (\Exception $e) {
             return JsonResponse::respondFail('Failed to toggle product status: ' . $e->getMessage(), 500);
         }
     }
 
-
-
     public function deleteById($id)
     {
         try {
-            $product = $this->seller->products()->first();
-            if (!$product) {
-                return JsonResponse::respondErrorNotFound('Product not found');
-            }
+            $product = $this->seller->products()->findOrFail($id);
             $product->delete();
-
             return JsonResponse::respondSuccess('Product deleted successfully');
         } catch (\Exception $e) {
             return JsonResponse::respondFail('Failed to delete product: ' . $e->getMessage(), 500);

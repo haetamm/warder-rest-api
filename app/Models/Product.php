@@ -37,7 +37,6 @@ class Product extends Model
         'image_url',
         'condition',
         'description',
-        'brand',
         'price',
         'stock',
         'sku',

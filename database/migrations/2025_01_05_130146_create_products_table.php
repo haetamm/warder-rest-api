@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('sku')->unique()->nullable();
             $table->unsignedMediumInteger('product_weight');
             $table->enum('shipping_insurance', ['wajib', 'opsional']);
+            $table->unsignedBigInteger('view')->default(0);
             $table->foreign('seller_id')->references('id')->on('sellers')->onDelete('cascade');
             $table->timestamp('is_active')->nullable();
             $table->softDeletes();

@@ -15,6 +15,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('login/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('login/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{domain}', [ProductController::class, 'getByDomainSeller']);
 
 Route::middleware(['role' . ':ADMIN,USER,SELLER'])->group(function () {
