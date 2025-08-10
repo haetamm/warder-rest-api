@@ -64,6 +64,7 @@ class ProductController extends Controller
     {
         try {
             $query = QueryBuilder::for(Product::class)
+                ->with('seller')
                 ->active();
 
             if (request()->query('view') === 'true') {
@@ -73,7 +74,15 @@ class ProductController extends Controller
             $products = $this->applyProductFilters($query)
                 ->paginate(request()->input('per_page', 10));
 
-            $formattedProducts = $products->map(fn($product) => ByDomainResponse::formatProduct($product));
+            $formattedProducts = $products->map(function ($product) {
+                return array_merge(
+                    ByDomainResponse::formatProduct($product),
+                    [
+                        'seller' => ByDomainResponse::formatSeller($product->seller)
+                    ]
+                );
+            });
+
             return JsonResponse::respondSuccess([
                 'products' => $formattedProducts,
                 'pagination' => PaginationResponse::formatPagination($products),
@@ -102,7 +111,11 @@ class ProductController extends Controller
     public function getByDomainSeller($domain)
     {
         try {
-            $seller = Seller::where('shop_domain', $domain)->firstOrFail();
+            $seller = Seller::where('shop_domain', $domain)->first();
+
+            if (!$seller) {
+                return JsonResponse::respondFail('Seller not found', 404);
+            }
 
             $products = $this->applyProductFilters(
                 QueryBuilder::for(Product::class)

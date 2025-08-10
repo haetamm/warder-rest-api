@@ -8,6 +8,7 @@ class ByDomainResponse
     {
         return [
             'shop_name' => $seller->shop_name,
+            'shop_domain' => $seller->shop_domain,
             'regencies' => $seller->regencies,
             'desc' => $seller->desc,
             'created_at' => $seller->created_at->toDateTimeString(), // Format ke string waktu
